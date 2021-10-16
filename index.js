@@ -1,6 +1,7 @@
 global.express = require( "express" );
 global.app = express();
 
+global.request = require( "request" );
 global.http = require( "http" );
 global.discord = require( "discord.js" );
 
@@ -20,7 +21,7 @@ process.on( "uncaughtException", function( err ){ console.error( err ) } );
 if ( process.env.PORT ) { 
     setInterval( function() { request( "https://zvbhrf.herokuapp.com/" ) }, 300000 );
 };
- 
+
 /////
 
 require( "./discord.js" );

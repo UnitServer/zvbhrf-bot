@@ -9,7 +9,8 @@
     "http": "^0.0.1-security",
     "node": "^16.10.0",
     "node-static": "^0.7.11",
-    "nodemon": "^2.0.13"
+    "nodemon": "^2.0.13",
+    "request": "^2.88.2"
   },
   "devDependencies": {},
   "scripts": {
