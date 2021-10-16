@@ -1,0 +1,29 @@
+{
+  "name": "zvbhrf-bot",
+  "version": "1.0.0",
+  "description": "Zvbhrf's Fun Bot",
+  "main": "index.js",
+  "dependencies": {
+    "discord.js": "^12.5.3",
+    "express": "^4.17.1",
+    "http": "^0.0.1-security",
+    "node": "^16.10.0",
+    "node-static": "^0.7.11",
+    "nodemon": "^2.0.13"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "node index.js",
+    "start_local": "nodemon index.js -L"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ugolochek/zvbhrf-bot.git"
+  },
+  "author": "Zvbhrf",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ugolochek/zvbhrf-bot/issues"
+  },
+  "homepage": "https://github.com/ugolochek/zvbhrf-bot#readme"
+}
