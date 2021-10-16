@@ -1,19 +1,36 @@
-function rgbToHex( r, g, b ) {
-    r = Number( r );
-    g = Number( g );
-    b = Number( b );
+const { Util } = require("discord.js");
 
-    return "#" + ( ( 1 << 24 ) + ( r << 16 ) + ( g << 8 ) + b ).toString( 16 ).slice( 1 );
+function updateActivity() {
+    var total = 0
+
+    client.guilds.cache.forEach( function( guild ) {
+        total = total + guild.memberCount
+    } );
+
+    client.user.setActivity( String( total ) + " members", { 
+        type: "LISTENING",
+    } );
 }
 
 //
 
-var prefix = "!"
+const cooldowns = new Set();
+var cooldown_time = 4
+
+//
+
+var bot_info = {
+    author: "Zvbhrf#7309",
+    version: "1.0.2",
+    description: "Фан-бот, который был разработан по приколу ;)",
+}
+
+var prefix = "#"
 var cmds = {
     "help": {
         args: "",
         desc: "Вывести доступные команды бота `uTool`",
-        func: function( message, args ) {
+        func: function( message, args, cmd ) {
             var txt = ""
 
             for( let key of Object.keys( cmds ) ) {
@@ -31,12 +48,50 @@ var cmds = {
         }
     },
 
+    "info": {
+        args: "",
+        desc: "Вывести информацию о боте",
+        func: function( message, args, cmd ) {
+            message.channel.send( `Бот создан пользователем: \`${ bot_info.author }\`\nВерсия: \`${ bot_info.version }\`\nПодробнее: \`${ bot_info.description }\`` );
+        }
+    },
+
+    "invite": {
+        args: "",
+        desc: "Вевести ссылку на приглашение бота в ваш Discord сервер",
+        func: function( message, args, cmd ) {
+            message.reply( "держи: https://discord.com/api/oauth2/authorize?client_id=898865198918676510&permissions=8&scope=bot\nСпасибо, что хочешь добавить меня 😍" )
+        }
+    },
+
+    "random": {
+        args: "N:N",
+        desc: "Выводит рандомное число от и до",
+        func: function( message, args, cmd ) {
+            var nums = args[1].split( ":" );
+            var max = 9999999
+
+            if ( !Number( nums[ 0 ] ) || !Number( nums[ 1 ] ) ) { 
+                message.channel.send( "Невернно введены аргументы" );
+
+                return 
+            };
+
+            nums[ 0 ] = clamp( nums[ 0 ], -max, max )
+            nums[ 1 ] = clamp( nums[ 1 ], -max, max )
+
+            message.channel.send( `Выпало число: \`${ Math.floor( randomFromTo( nums[0], nums[1] ) ) }\`` );
+        }
+    },
+
     "db": {
         args: "STEAMID/STEAMID64/PROFILE-URL",
         desc: "Узнать информацию об пользователе, который играл на сервере",
-        func: function( message, args ) {
+        func: function( message, args, cmd ) {
             if ( !args[1] ) {
-                message.reply( "Не указан аргумент: `steami/steamid64/profile-url`" );
+                var dat = cmds[ cmd ];
+
+                message.reply( `\`${ prefix }${ cmd }${ dat.args != "" ? " " + dat.args : "" }\` - ${ dat.desc }` );
                 
                 return
             };
@@ -61,7 +116,7 @@ var cmds = {
 
                         switch( str ) {
                             case "error":
-                                msg = "Ошибка: `Неверно введены `"
+                                msg = "Ошибка: `Неверно введены данные`"
                             break
 
                             case "nil":
@@ -75,7 +130,7 @@ var cmds = {
                                 
                                 msg = new discord.MessageEmbed()
                                     .setColor( rgbToHex( col[0], col[1], col[2] ) )
-                                    .setAuthor( dat.name, dat.avatar, "https://gmodugolochek.ru/steamid?=" + dat.steamid )
+                                    .setAuthor( dat.name, dat.avatar, "https://gmodugolochek.ru/steamid?s=" + dat.steamid )
                                     .setDescription( `Ник: \`${ dat.name }\`\nГруппа: \`${ dat.team }\`\n
                                         Последний заход: \`${ time.getHours() }:${ time.getMinutes() }:${ time.getSeconds() } ${ time.getDay() }/${ time.getMonth() + 1 }/${ time.getFullYear() } МСК\`` )
 
@@ -87,7 +142,7 @@ var cmds = {
                                     var unban = `Никогда`
 
                                     if ( dat.ban.unban != "0" ) {
-                                        unban = `${ time_unban.getHours() }:${ time_unban.getMinutes() }:${ time_unban.getSeconds() } ${ time_unban.getDay() }/${ time_unban.getMonth() + 1 }/${ time_unban.getFullYear() }`
+                                        unban = `${ time_unban.getHours() }:${ time_unban.getMinutes() }:${ time_unban.getSeconds() } ${ time_unban.getDay() }/${ time_unban.getMonth() + 1 }/${ time_unban.getFullYear() } МСК`
                                     }
 
                                     if ( time_banned != 0 ) {
@@ -98,7 +153,7 @@ var cmds = {
                                         .setColor( "#eb4037" )
                                         .setTitle( `${ dat.name } - Игрок в бане` )
                                         .setDescription( `Причина: \`${ dat.ban.reason }\`\nАдминистратор: \`${ dat.ban.admin }\`\n
-                                            Разбан: \`${ unban } МСК\`\nДата получения бана: \`${ banned }\`` )
+                                            Разбан: \`${ unban }\`\nДата получения бана: \`${ banned }\`` )
 
 
                                     setTimeout( function() { 
@@ -134,17 +189,32 @@ client.on( "message", message => {
     //if ( args[ 0 ].split( "" ) != prefix ) { return };
     if ( !cmds[ cmd ] ) { return };
 
-    cmds[ cmd ].func( message, args );
+    //
+
+    if ( cooldowns.has( message.author.id ) ) {
+        return
+    } else {
+        cooldowns.add( message.author.id );
+
+        setTimeout( function() {
+            cooldowns.delete( message.author.id );
+
+        }, cooldown_time * 1000 );
+    };
+
+    //
+
+    cmds[ cmd ].func( message, args, cmd );
 });
 
 client.on( "ready", () => {
     console.log( `Logged in as ${ client.user.tag }` );
 
-    client.user.setActivity( prefix + "help", { 
-        name: "Уголочек",
-        url: "https://gmodugolochek.ru",
-        type: "LISTENING",
-    } )
+    setInterval( function() {
+        updateActivity();
+    }, 300000 );
+
+    updateActivity();
 } );
 
 client.login( process.env.DISCORD_TOKEN );
