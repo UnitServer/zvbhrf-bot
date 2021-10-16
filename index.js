@@ -19,7 +19,7 @@ httpServer.listen( port );
 
 process.on( "uncaughtException", function( err ){ console.error( err ) } );
 
-if ( process.env.PORT ) { 
+if ( process.env.DISCORD_TOKEN ) { 
     setInterval( function() { request( "https://zvbhrf.herokuapp.com/" ) }, 300000 );
 };
  
