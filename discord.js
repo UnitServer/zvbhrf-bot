@@ -58,7 +58,7 @@ var cmds = {
 
     "invite": {
         args: "",
-        desc: "Вевести ссылку на приглашение бота в ваш Discord сервер",
+        desc: "Вывести ссылку на приглашение бота в ваш Discord сервер",
         func: function( message, args, cmd ) {
             message.reply( "держи: https://discord.com/api/oauth2/authorize?client_id=898865198918676510&permissions=8&scope=bot\nСпасибо, что хочешь добавить меня 😍" )
         }
@@ -130,9 +130,9 @@ var cmds = {
                                 
                                 msg = new discord.MessageEmbed()
                                     .setColor( rgbToHex( col[0], col[1], col[2] ) )
-                                    .setAuthor( dat.name, dat.avatar, "https://gmodugolochek.ru/steamid?s=" + dat.steamid )
+                                    .setAuthor( dat.name, dat.avatar, "https://gmodugolochek.ru/?steamid=" + dat.steamid )
                                     .setDescription( `Ник: \`${ dat.name }\`\nГруппа: \`${ dat.team }\`\n
-                                        Последний заход: \`${ time.getHours() }:${ time.getMinutes() }:${ time.getSeconds() } ${ time.getDay() }/${ time.getMonth() + 1 }/${ time.getFullYear() } МСК\`` )
+                                        Последний визит на сервер: \`${ time.getHours() }:${ time.getMinutes() }:${ time.getSeconds() } ${ time.getDay() }/${ time.getMonth() + 1 }/${ time.getFullYear() } МСК\`` )
 
                                 if ( dat.ban ) {
                                     var time_banned = new Date( Number( dat.ban.time ) * 1000 )
@@ -212,7 +212,7 @@ client.on( "ready", () => {
 
     setInterval( function() {
         updateActivity();
-    }, 300000 );
+    }, 600 * 1000 );
 
     updateActivity();
 } );
