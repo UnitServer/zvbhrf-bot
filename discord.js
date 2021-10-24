@@ -1,4 +1,4 @@
-const { Util } = require("discord.js");
+const e = require("express");
 
 function updateActivity() {
     var total = 0
@@ -11,6 +11,42 @@ function updateActivity() {
         type: "LISTENING",
     } );
 }
+
+/////
+
+function sendSuccess( desc, message ) {
+    var emb = new discord.MessageEmbed()
+        .setColor( "#32a852" )
+        .setTitle( "Успешно" )
+        .setDescription( desc );
+
+    message.channel.send( emb );
+};
+
+function sendError( desc, message ) {
+    var emb = new discord.MessageEmbed()
+        .setColor( "#eb4037" )
+        .setTitle( "Ошибка" )
+        .setDescription( desc );
+
+    message.channel.send( emb );
+};
+
+/////
+
+function userHasRole( message, author, role ) {
+    let grole = message.guild.roles.cache.find( r => r.name === role );
+
+    if ( grole ) {
+        var dat = author.roles.cache.find( r => r.name === role );
+
+        if ( dat ) {
+            return dat
+        };
+    } else {
+        sendError( `Похоже, что у вас не установлена роль \`${ role }\`!`, message )
+    };
+};
 
 //
 
@@ -132,7 +168,7 @@ var cmds = {
                                     .setColor( rgbToHex( col[0], col[1], col[2] ) )
                                     .setAuthor( dat.name, dat.avatar, "https://gmodugolochek.ru/?steamid=" + dat.steamid )
                                     .setDescription( `Ник: \`${ dat.name }\`\nГруппа: \`${ dat.team }\`\n
-                                        Последний визит на сервер: \`${ time.getHours() }:${ time.getMinutes() }:${ time.getSeconds() } ${ time.getDay() }/${ time.getMonth() + 1 }/${ time.getFullYear() } МСК\`` )
+                                        Последний визит: \`${ time.getHours() }:${ time.getMinutes() }:${ time.getSeconds() } ${ time.getDay() }/${ time.getMonth() + 1 }/${ time.getFullYear() } МСК\`` )
 
                                 if ( dat.ban ) {
                                     var time_banned = new Date( Number( dat.ban.time ) * 1000 )
@@ -170,6 +206,62 @@ var cmds = {
                 });
             } ).end();
         },
+    },
+
+    ///// ADMINISTRARION /////
+
+    "kick": {
+        args: "Mention",
+        description: "Кикает пользователя",
+        func: function( message, args, cmd ) {
+            if ( args[1] ) {
+                if ( userHasRole( message, message.member, "uTool-Admin" ) ) {
+                    var user = message.mentions.members.first();
+                    var p = userHasRole( message, user, "uTool-Admin" );
+
+                    if ( p ) {
+                        sendError( `Вы не можете кикнуть данного пользователя (\`${ user.user.username }\`), так-как у него есть роль \`uTool-Admin\``, message );
+                    } else {
+                        user.kick().then( ( member ) => {
+                            sendSuccess( member.displayName + " был кикнут :wave:", message );
+                        } ).catch( () => {
+                            sendError( `Похоже, что у меня нету разрешение на кик \`${ user.user.username }\`. Мне кажется, что роль пользователя выше чем моя`, message );
+                        } );
+                    };
+                } else {
+                    sendError( `У вас нету роли \`uTool-Admin\``, message )
+                };
+            } else {
+                sendError( `Не указан аргумент \`Mention\``, message )
+            };
+        }
+    },
+
+    "ban": {
+        args: "Mention",
+        description: "Банит юзера",
+        func: function( message, args, cmd ) {
+            if ( args[1] ) {
+                if ( userHasRole( message, message.member, "uTool-Admin" ) ) {
+                    var user = message.mentions.members.first();
+                    var p = userHasRole( message, user, "uTool-Admin" );
+
+                    if ( p ) {
+                        sendError( `Вы не можете забанить данного пользователя (\`${ user.user.username }\`), так-как у него есть роль \`uTool-Admin\``, message );
+                    } else {
+                        user.ban().then( ( member ) => {
+                            sendSuccess( member.displayName + " был забанен :wave:", message );
+                        } ).catch( () => {
+                            sendError( `Похоже, что у меня нету разрешение на бан \`${ user.user.username }\`. Мне кажется, что роль пользователя выше чем моя`, message );
+                        } );
+                    };
+                } else {
+                    sendError( `У вас нету роли \`uTool-Admin\``, message )
+                };
+            } else {
+                sendError( `Не указан аргумент \`Mention\``, message )
+            };
+        }
     },
 };
 
