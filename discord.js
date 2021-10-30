@@ -212,7 +212,7 @@ var cmds = {
 
     "kick": {
         args: "Mention",
-        description: "Кикает пользователя",
+        desc: "Кикает пользователя",
         func: function( message, args, cmd ) {
             if ( args[1] ) {
                 if ( userHasRole( message, message.member, "uTool-Admin" ) ) {
@@ -239,7 +239,7 @@ var cmds = {
 
     "ban": {
         args: "Mention",
-        description: "Банит юзера",
+        desc: "Банит юзера",
         func: function( message, args, cmd ) {
             if ( args[1] ) {
                 if ( userHasRole( message, message.member, "uTool-Admin" ) ) {
