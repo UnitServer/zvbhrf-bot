@@ -134,7 +134,7 @@ var cmds = {
 
             var options = {
                 host: "gmodugolochek.ru",
-                path: "/playerinfo?s=" + args[1],
+                path: "/api/player?s=" + args[1],
 
                 method: "GET"
             };
@@ -309,4 +309,4 @@ client.on( "ready", () => {
     updateActivity();
 } );
 
-client.login( process.env.DISCORD_TOKEN );
+client.login( "TOKEN-HERE" );
